@@ -1,0 +1,27 @@
+{
+  "name": "acme-nouns",
+  "version": "1.0.0",
+  "description": "",
+  "main": "db.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markbayor/acme-nouns.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/markbayor/acme-nouns/issues"
+  },
+  "homepage": "https://github.com/markbayor/acme-nouns#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.2",
+    "pg": "^7.18.2",
+    "sequelize": "^5.21.5"
+  }
+}
