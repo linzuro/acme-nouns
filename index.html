@@ -51,46 +51,100 @@
     <div id="root"></div>
     <script type="text/babel">
       const { HashRouter, Link, NavLink, Route, Switch } = ReactRouterDOM;
+      const { useEffect, useState } = React;
 
-      const People = ({ places, people, things }) => {
+      const PeopleForm = ({ createPerson, places, people, things }) => {
+        const [name, setName] = useState("");
+        const [place, setPlace] = useState("");
+
+        const add = async () => {
+          const placeObj =
+            places.find(p => p.name.toLowerCase() === place.toLowerCase()) || (await axios.post(`/api/places`, { name: place })).data;
+          const newPerson = (await axios.post(`/api/people`, { name: name, placeId: placeObj.id })).data;
+          createPerson(newPerson);
+        };
         return (
-          <ul>
-            {people.map(person => (
-              <li key={person.id}>
-                {person.name} is from: {places.find(p => p.id === person.placeId).name}
-                <div>
-                  and owns:{" "}
-                  <ul>
-                    {things
-                      .filter(t => t.personId === person.id)
-                      .map(t => (
-                        <li key={t.id}>{t.name}</li>
-                      ))}
-                  </ul>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <form onSubmit={ev => ev.preventDefault()}>
+            <input placeholder="Person name" type="text" onChange={ev => setName(ev.target.value)}></input>
+            <input placeholder="Person place" type="text" onChange={ev => setPlace(ev.target.value)}></input>
+            <button onClick={() => add()}>Add</button>
+          </form>
+        );
+      };
+      const PlacesForm = async ({ places, people, things }) => {
+        const [name, setName] = useState("");
+        const add = async name => {
+          const newPlace = await axios.post(`/api/places`, { name: name });
+        };
+        return (
+          <form onSubmit={ev => ev.preventDefault()}>
+            <input placeholder="Place name" type="text" onChange={ev => setName(ev.target.value)}></input>
+            <button onClick={() => add()}>Add</button>
+          </form>
+        );
+      };
+      const ThingsForm = ({ places, people, things }) => {
+        const [name, setName] = useState("");
+        const [person, setPerson] = useState("");
+
+        const add = async (name, place) => {
+          const personObj =
+            people.find(p => p.name.toLowerCase() === person.toLowerCase()) || (await axios.post(`/api/people`, { name: person })).data;
+          const newPerson = await axios.post(`/api/people`, { name: name, personId: personObj.id });
+        };
+        return (
+          <form onSubmit={ev => ev.preventDefault()}>
+            <input placeholder="Thing name" type="text" onChange={ev => setName(ev.target.value)}></input>
+            <input placeholder="Owner name" type="text" onChange={ev => setPlace(ev.target.value)}></input>
+            <button onClick={() => add()}>Add</button>
+          </form>
+        );
+      };
+      const People = ({ places, people, things, createPerson }) => {
+        return (
+          <div>
+            <PeopleForm places={places} people={people} things={things} createPerson={createPerson} />
+            <ul>
+              {people.map(person => (
+                <li key={person.id}>
+                  {person.name} is from: {places.find(p => p.id === person.placeId).name}
+                  <div>
+                    and owns:{" "}
+                    <ul>
+                      {things
+                        .filter(t => t.personId === person.id)
+                        .map(t => (
+                          <li key={t.id}>{t.name}</li>
+                        ))}
+                    </ul>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         );
       };
 
       const Places = ({ places, people, things }) => {
         return (
-          <ul>
-            {places.map(place => (
-              <li key={place.id}>
-                {place.name}{" "}
-                <ul>
-                  People here:{" "}
-                  {people
-                    .filter(p => p.placeId === place.id)
-                    .map(p => (
-                      <li key={p.id}>{p.name}</li>
-                    ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
+          <div>
+            <PlacesForm places={places} people={people} things={things} />
+            <ul>
+              {places.map(place => (
+                <li key={place.id}>
+                  {place.name}{" "}
+                  <ul>
+                    People here:{" "}
+                    {people
+                      .filter(p => p.placeId === place.id)
+                      .map(p => (
+                        <li key={p.id}>{p.name}</li>
+                      ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          </div>
         );
       };
 
@@ -139,19 +193,33 @@
             places: [],
             things: []
           };
+          this.createPerson = this.createPerson.bind(this);
+          this.createThing = this.createThing.bind(this);
         }
+
         async componentDidMount() {
           const urls = ["/api/people", "/api/places", "/api/things"];
           const [people, places, things] = await Promise.all(urls.map(url => axios.get(url).then(response => response.data)));
           this.setState({ people, places, things });
         }
+
+        createPerson(newPerson) {
+          const { people } = this.state;
+          this.setState({ people: [...people, newPerson] });
+        }
+
+        createThing(newThing) {
+          const { things } = this.state;
+          this.setState({ things: [...things, newThing] });
+        }
+
         render() {
           return (
             <HashRouter>
               <Route render={() => <Nav {...this.state} />} />
               <div className="container">
                 <h1>Acme Nouns</h1>
-                <Route path="/people" render={() => <People {...this.state} />} />
+                <Route path="/people" render={() => <People {...this.state} createPerson={this.createPerson} />} />
                 <Route path="/places" render={() => <Places {...this.state} />} />
                 <Route path="/things" render={() => <Things {...this.state} />} />
               </div>

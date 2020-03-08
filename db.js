@@ -68,11 +68,27 @@ const sync = async () => {
   ]);
 };
 
+const createPerson = async (name, placeId) => {
+  const newPerson = await new Promise((resolve, reject) => resolve(Person.create({ name: name, placeId: placeId })));
+  return newPerson;
+};
+const createPlace = async name => {
+  const newPlace = await new Promise((resolve, reject) => resolve(Place.create({ name: name })));
+  return newPlace;
+};
+const createThing = async (name, personId) => {
+  const newThing = await new Promise((resolve, reject) => resolve(Thing.create({ name: name, personId: personId })));
+  return newThing;
+};
+
 module.exports = {
   sync,
   models: {
     Person,
     Place,
     Thing
-  }
+  },
+  createPerson,
+  createPlace,
+  createThing
 };

@@ -29,6 +29,21 @@ app.get("/api/things", (req, res, next) => {
     .catch(next);
 });
 
+app.post("/api/people", (req, res, next) => {
+  db.createPerson(req.body.name, req.body.placeId)
+    .then(person => res.send(person))
+    .catch(next);
+});
+app.post("/api/places", (req, res, next) => {
+  db.createPlace(req.body.name)
+    .then(place => res.send(place))
+    .catch(next);
+});
+app.post("/api/things", (req, res, next) => {
+  db.createThing(req.body.name, req.body.personId)
+    .then(thing => res.send(thing))
+    .catch(next);
+});
 const port = process.env.PORT || 3000;
 db.sync().then(() => {
   app.listen(port, () => console.log(`listening on port${port}`));
